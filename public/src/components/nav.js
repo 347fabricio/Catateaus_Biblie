@@ -18,6 +18,8 @@ function populateBookDiv() {
   populateBooksList(dropdownMenu, liTemplate, bibleBooks);
   setupMainButtonToggle(booksEl, dropdownMenu, chaptersEl);
   setupBookSelection(booksEl, dropdownMenu, chaptersEl);
+
+  setupVersionSelection(dropdownMenu);
 }
 
 /**
@@ -46,13 +48,15 @@ function fixBootstrapDropdownScroll(toggleElement) {
 function populateBooksList(dropdownMenu, templateItem, booksData) {
   booksData.forEach((book, index) => {
     const newLi = templateItem.cloneNode(true);
-    newLi.querySelector("a").textContent = book.name;
+    newLi.removeAttribute("id");
+    newLi.classList.remove("d-none");
+    newLi.querySelector("button").textContent = book.name;
     newLi.dataset.bookId = index + 1;
     newLi.dataset.bookName = book.name;
     dropdownMenu.append(newLi);
   });
 
-  templateItem.remove();
+  templateItem.querySelector("button").classList.add("fw-bold");
 }
 
 /**
@@ -66,10 +70,15 @@ function setupMainButtonToggle(booksEl, dropdownMenu, chaptersEl) {
 
   booksBtn.addEventListener("click", () => {
     const isDropdownShown = booksEl.querySelector(".btn").classList.contains("show");
+    const versionItems = dropdownMenu.querySelectorAll(".versionName");
 
     if (isDropdownShown && chaptersEl.classList.contains("d-none")) {
-      const listItems = dropdownMenu.querySelectorAll("li");
+      showVersionsSection(dropdownMenu);
+
+      const listItems = dropdownMenu.querySelectorAll("li:not(.versionName)");
       listItems.forEach((li) => li.classList.remove("d-none"));
+    } else if (versionItems.length) {
+      hideVersionNames(dropdownMenu);
     } else {
       clearChapters(chaptersEl);
       chaptersEl.classList.add("d-none");
@@ -84,8 +93,7 @@ function setupMainButtonToggle(booksEl, dropdownMenu, chaptersEl) {
  * @param {HTMLElement} chaptersEl - O contêiner onde os capítulos serão renderizados.
  */
 function setupBookSelection(booksEl, dropdownMenu, chaptersEl) {
-  const listItems = dropdownMenu.querySelectorAll("li");
-
+  const listItems = dropdownMenu.querySelectorAll("li:not(#versions):not(.versionName)");
   listItems.forEach((li, index) => {
     li.addEventListener("click", async () => {
       const bookId = li.dataset.bookId;
@@ -95,6 +103,9 @@ function setupBookSelection(booksEl, dropdownMenu, chaptersEl) {
       booksEl.dataset.bookName = bookName;
 
       booksEl.querySelector("button").textContent = bookName;
+
+      hideVersionsSection(dropdownMenu);
+      hideHr(dropdownMenu);
 
       listItems.forEach((x) => x.classList.add("d-none"));
 
@@ -180,20 +191,95 @@ function clearChapters(chaptersEl) {
   toRemove.forEach((x) => x.remove());
 }
 
-function populateVersionsDiv() {
-  const li = document.querySelector("#versions .dropdown-menu");
+/**
+ * Exibe a seção de versões no menu suspenso.
+ * @param {HTMLElement} dropdownMenu - O contêiner do menu suspenso onde os elementos estão localizados.
+ */
+function showVersionsSection(dropdownMenu) {
+  const liVersions = dropdownMenu.querySelector("#versions");
+  const versionsBtn = liVersions.querySelector("button");
+  const hr = dropdownMenu.querySelector("hr");
 
-  bibleVersions.forEach((version) => {
-    const newLi = li.querySelector("li").cloneNode(true);
-    newLi.querySelector("a").textContent = version.name;
-    li.append(newLi);
-  });
-
-  li.querySelector("li").remove();
+  versionsBtn.textContent = "Versões";
+  liVersions.classList.remove("d-none");
+  hr.classList.remove("d-none");
 }
 
+/**
+ * Oculta a seção de versões no menu suspenso.
+ * @param {HTMLElement} dropdownMenu - O contêiner do menu suspenso onde os elementos estão localizados.
+ */
+function hideVersionsSection(dropdownMenu) {
+  const liVersions = dropdownMenu.querySelector("#versions");
+  liVersions.classList.add("d-none");
+}
+
+/**
+ * Oculta a linha separadora no menu suspenso.
+ * @param {HTMLElement} dropdownMenu - O contêiner do menu suspenso onde os elementos estão localizados.
+ */
+function hideHr(dropdownMenu) {
+  const hr = dropdownMenu.querySelector("hr");
+  hr.classList.add("d-none");
+}
+
+/**
+ * Configura o comportamento do botão "Versões" no menu suspenso.
+ * Ao ser clicado, oculta a lista de livros, exibe os itens de versão e,
+ * caso ainda não existam, gera dinamicamente a lista de versões disponíveis.
+ * @param {HTMLElement} dropdownMenu - O contêiner do menu suspenso que contém os elementos.
+ */
+function setupVersionSelection(dropdownMenu) {
+  const liVersion = dropdownMenu.querySelector("#versions");
+
+  liVersion.addEventListener("click", () => {
+    liVersion.classList.remove("d-none");
+
+    const listItems = dropdownMenu.querySelectorAll("li:not(#versions)");
+    listItems.forEach((x) => x.classList.add("d-none"));
+
+    const versionItems = dropdownMenu.querySelectorAll(".versionName");
+    versionItems.forEach((x) => x.classList.remove("d-none"));
+
+    hideVersionsSection(dropdownMenu);
+    hideHr(dropdownMenu);
+
+    const versionNames = dropdownMenu.querySelectorAll(".versionName");
+
+    if (versionNames.length) return;
+
+    bibleVersions.forEach((version) => {
+      const newLiVersion = liVersion.cloneNode(true);
+      newLiVersion.classList.add("versionName");
+      newLiVersion.removeAttribute("id");
+      newLiVersion.querySelector("button").textContent = version.name;
+      newLiVersion.dataset.bookVersionId = version.id;
+      newLiVersion.querySelector("button").classList.remove("fw-bold");
+      newLiVersion.classList.remove("d-none");
+
+      dropdownMenu.append(newLiVersion);
+    });
+  });
+
+  hideVersionsSection(dropdownMenu);
+}
+
+/**
+ * Oculta todos os itens correspondentes aos nomes das versões bíblicas no menu suspenso.
+ * @param {HTMLElement} dropdownMenu - O contêiner do menu suspenso onde os elementos estão localizados.
+ */
+function hideVersionNames(dropdownMenu) {
+  const versionNames = dropdownMenu.querySelectorAll(".versionName");
+
+  if (versionNames) [...versionNames].forEach((el) => el.classList.add("d-none"));
+}
+
+/**
+ * Função de inicialização principal (Entry Point) do componente de navegação.
+ * Centraliza e dispara a configuração de livros, capítulos e versões.
+ * Exportada para permitir inicialização assíncrona sob demanda a partir de outros módulos.
+ */
 export async function populateNav() {
   populateBookDiv();
-  populateVersionsDiv();
 }
 populateNav();

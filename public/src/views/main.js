@@ -1,2 +1,2 @@
-// import "../../assets/js/header.js";
+import "../../assets/js/header.js";
 import "../components/nav.js";

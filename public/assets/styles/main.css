@@ -1,5 +1,52 @@
-nav {
+body {
+  font-family: "Times New Roman", Times, serif;
+  font-optical-sizing: auto;
+  font-weight: 400, 500;
+  font-style: normal;
+}
+
+/* .header {
   transition: opacity 100ms;
+} */
+
+#chevronDiv {
+  cursor: pointer;
+  width: 100px;
+}
+
+.bi-chevron-compact-down {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+  transform: rotate(180deg);
+}
+
+.bi-chevron-compact-down:active {
+  transform: scale(0.9);
+}
+
+#navDiv {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease,
+    max-height 0.3s ease;
+  transform-origin: top;
+  /* overflow: hidden; */
+}
+
+.nav-hidden {
+  opacity: 0;
+  transform: scaleY(0);
+  max-height: 0;
+  pointer-events: none;
+  margin: 0 !important;
+}
+
+.nav-visible {
+  opacity: 1;
+  transform: scaleY(1);
+  max-height: 200px;
+  pointer-events: all;
 }
 
 .container-fluid {
@@ -12,7 +59,7 @@ nav {
   cursor: pointer;
   font-size: 12px;
   position: relative;
-  top: -4px;
+  top: -6px;
 }
 
 #books .dropdown-menu {
@@ -23,3 +70,7 @@ nav {
   will-change: auto;
   max-height: calc(50vh);
 }
+
+/* #verses {
+  margin: 70px auto;
+} */
